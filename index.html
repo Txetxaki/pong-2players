@@ -120,21 +120,19 @@ function tickObs(){
 
 /* ── POWERUPS ───────────────────────────────────────── */
 const PU_TYPES=[
-  // classic
-  {id:'BIG',   col:'#00ff88', lbl:'BIG'},
-  {id:'SMALL', col:'#ff4488', lbl:'SMALL'},
-  {id:'FAST',  col:'#ffaa00', lbl:'FAST'},
-  {id:'FLIP',  col:'#cc44ff', lbl:'FLIP'},
-  // loco mode
-  {id:'SHOOT', col:'#ff2200', lbl:'SHOOT x3'},
-  {id:'FREEZE',col:'#88ccff', lbl:'FREEZE'},
-  {id:'CHAOS', col:'#ff44ff', lbl:'CHAOS'},
-  {id:'GHOST', col:'#aaffaa', lbl:'GHOST'},
-  {id:'SWAP',  col:'#ffff00', lbl:'SWAP'},
-  {id:'TINY',  col:'#ff8800', lbl:'TINY'},
-  {id:'BOMB',  col:'#ff0055', lbl:'BOMB!'},
-  {id:'GRAVITY',col:'#00ffaa',lbl:'GRAV'},
-  {id:'DRUNK', col:'#dd44ff', lbl:'DRUNK'},
+  {id:'BIG',    col:'#00ff88', lbl:'BIG'},
+  {id:'SMALL',  col:'#ff4488', lbl:'SMALL'},
+  {id:'FAST',   col:'#ffaa00', lbl:'FAST'},
+  {id:'FLIP',   col:'#cc44ff', lbl:'FLIP'},
+  {id:'SHOOT',  col:'#ff2200', lbl:'SHOOT x3'},
+  {id:'FREEZE', col:'#88ccff', lbl:'FREEZE'},
+  {id:'CHAOS',  col:'#ff44ff', lbl:'CHAOS'},
+  {id:'GHOST',  col:'#aaffaa', lbl:'GHOST'},
+  {id:'SWAP',   col:'#ffff00', lbl:'SWAP'},
+  {id:'TINY',   col:'#ff8800', lbl:'TINY'},
+  {id:'BOMB',   col:'#ff0055', lbl:'BOMB!'},
+  {id:'GRAVITY',col:'#00ffaa', lbl:'GRAV'},
+  {id:'DRUNK',  col:'#dd44ff', lbl:'DRUNK'},
 ];
 
 function spawnPU(){
@@ -144,77 +142,52 @@ function spawnPU(){
     id:t.id,col:t.col,lbl:t.lbl,life:600,age:0});
 }
 
-function applyPU(pu, taker){
+function applyPU(pu,taker){
   const other=taker===p1?p2:p1;
   floatText(pu.x,pu.y,pu.lbl,pu.col);
   burst(pu.x,pu.y,pu.col,35);
   ring(pu.x,pu.y,pu.col);
   shake=10; flash=10;
-
   switch(pu.id){
     case 'BIG':
       taker.ph=Math.min(PH*2,taker.ph+40);
       setTimeout(()=>taker.ph=PH,6000); break;
-
     case 'SMALL':
       other.ph=Math.max(PH*.35,other.ph-40);
       setTimeout(()=>other.ph=PH,5000); break;
-
     case 'FAST':{
-      const s=hyp(ball.vx,ball.vy);
-      const ns=Math.min(s+5,19);
+      const s=hyp(ball.vx,ball.vy), ns=Math.min(s+5,19);
       ball.vx=ball.vx/s*ns; ball.vy=ball.vy/s*ns; break;}
-
     case 'FLIP':
-      other.rev=true;
-      setTimeout(()=>other.rev=false,4500); break;
-
-    // ── LOCURAS ──────────────────────────────────────
+      other.rev=true; setTimeout(()=>other.rev=false,4500); break;
     case 'SHOOT':
       taker.ammo=Math.min(taker.ammo+3,6);
-      floatText(taker.x+PW/2, taker.y-20,'🔫 x'+taker.ammo, pu.col); break;
-
+      floatText(taker.x+PW/2,taker.y-20,'● x'+taker.ammo,pu.col); break;
     case 'FREEZE':
-      other.frozen=180; // 3 seconds @ 60fps
+      other.frozen=180;
       burst(other.x+PW/2,other.y+other.ph/2,'#88ccff',40);
-      floatText(other.x+PW/2,other.y-20,'❄ FROZEN','#88ccff'); break;
-
+      floatText(other.x+PW/2,other.y-20,'FROZEN','#88ccff'); break;
     case 'CHAOS':
-      chaosTick=360; // 6 seconds of chaos
-      floatText(LW/2,LH/2,'⚡ CHAOS ⚡','#ff44ff'); break;
-
+      chaosTick=360; floatText(LW/2,LH/2,'CHAOS','#ff44ff'); break;
     case 'GHOST':
-      ghostTick=300; // 5 seconds ball goes through obstacles
-      floatText(LW/2,LH/2-20,'👻 GHOST','#aaffaa'); break;
-
+      ghostTick=300; floatText(LW/2,LH/2-20,'GHOST','#aaffaa'); break;
     case 'SWAP':{
-      // swap paddle Y positions
-      const tmp=p1.y; p1.y=clamp(p2.y,0,LH-p1.ph); p2.y=clamp(tmp,0,LH-p2.ph);
+      const tmp=p1.y;
+      p1.y=clamp(p2.y,0,LH-p1.ph); p2.y=clamp(tmp,0,LH-p2.ph);
       shake=20; burst(LW/2,LH/2,'#ffff00',50);
-      floatText(LW/2,LH/2,'⟷ SWAP','#ffff00'); break;}
-
+      floatText(LW/2,LH/2,'SWAP','#ffff00'); break;}
     case 'TINY':
-      ball.rMod=0.28;
-      setTimeout(()=>ball.rMod=1,6000); break;
-
+      ball.rMod=0.28; setTimeout(()=>ball.rMod=1,6000); break;
     case 'BOMB':{
-      // send ball in a random wild direction at max speed
       const ang=rnd(Math.PI*2);
       ball.vx=Math.cos(ang)*18; ball.vy=Math.sin(ang)*18;
-      burst(ball.x,ball.y,'#ff0055',60);
-      sparksAt(ball.x,ball.y,'#ffaa00',20);
-      shake=25; flash=20;
-      floatText(ball.x,ball.y-20,'💥 BOOM','#ff0055'); break;}
-
+      burst(ball.x,ball.y,'#ff0055',60); sparksAt(ball.x,ball.y,'#ffaa00',20);
+      shake=25; flash=20; floatText(ball.x,ball.y-20,'BOOM','#ff0055'); break;}
     case 'GRAVITY':
-      // ball gets pulled toward taker's side for 5s
-      taker._gravity=300;
-      floatText(taker.x+PW/2,taker.y-20,'↘ GRAV',pu.col); break;
-
+      taker._gravity=300; floatText(taker.x+PW/2,taker.y-20,'GRAV',pu.col); break;
     case 'DRUNK':
-      // opponent drifts randomly
       other.rev=false; other._drunk=360;
-      floatText(other.x+PW/2,other.y-20,'🍺 DRUNK','#dd44ff'); break;
+      floatText(other.x+PW/2,other.y-20,'DRUNK','#dd44ff'); break;
   }
 }
 
@@ -222,16 +195,11 @@ function applyPU(pu, taker){
 function fireBullet(player){
   if(player.ammo<=0||player.frozen>0) return;
   player.ammo--;
-  const isP1=player===p1;
-  const dir=isP1?1:-1;
-  const col=isP1?C1:C2;
+  const isP1=player===p1, dir=isP1?1:-1, col=isP1?C1:C2;
   const bx=isP1?player.x+PW+4:player.x-4;
   const by=player.y+player.ph/2;
   bullets.push({x:bx,y:by,vx:dir*16,col,owner:player,trail:[]});
   sparksAt(bx,by,col,6);
-  // cooldown flag
-  player.shooting=true;
-  setTimeout(()=>player.shooting=false,200);
 }
 
 /* ── reset ──────────────────────────────────────────── */
@@ -242,17 +210,12 @@ function resetBall(dir=1){
   scored=false; chaosTick=0; ghostTick=0;
 }
 function resetPaddles(){
-  p1.y=p2.y=LH/2-PH/2;
-  p1.ph=p2.ph=PH;
-  p1.rev=p2.rev=false;
-  p1.frozen=p2.frozen=0;
-  p1.ammo=p2.ammo=0;
-  p1._drunk=p2._drunk=0;
-  p1._gravity=p2._gravity=0;
+  p1.y=p2.y=LH/2-PH/2; p1.ph=p2.ph=PH;
+  p1.rev=p2.rev=false; p1.frozen=p2.frozen=0;
+  p1.ammo=p2.ammo=0; p1._drunk=p2._drunk=0; p1._gravity=p2._gravity=0;
 }
 function startGame(){
-  p1.score=p2.score=0;
-  resetPaddles();
+  p1.score=p2.score=0; resetPaddles();
   [particles,sparks,ftexts,powerups,obstacles,bullets].forEach(a=>a.length=0);
   obsLevel=0; puTimer=350; tick=0;
   resetBall(Math.random()<.5?1:-1);
@@ -260,8 +223,7 @@ function startGame(){
 }
 function checkWin(){
   if(p1.score>=WIN||p2.score>=WIN){
-    const w=p1.score>=WIN;
-    state='won'; ov.style.display='flex';
+    const w=p1.score>=WIN; state='won'; ov.style.display='flex';
     oT.textContent=(w?'J1':'J2')+' GANA';
     oT.style.textShadow=`0 0 20px ${w?C1:C2},0 0 80px ${w?C1:C2}`;
     oM.textContent='[ SPACE ] para revanche'; oH.textContent='';
@@ -273,7 +235,7 @@ function checkWin(){
 /* ── input ──────────────────────────────────────────── */
 const keys={};
 window.addEventListener('keydown',e=>{
-  if(!keys[e.key]){ // only on fresh press
+  if(!keys[e.key]){
     if((e.key==='q'||e.key==='Q')&&state==='playing') fireBullet(p1);
     if((e.key==='p'||e.key==='P')&&state==='playing') fireBullet(p2);
   }
@@ -285,9 +247,7 @@ window.addEventListener('keydown',e=>{
       state='paused'; ov.style.display='flex';
       oT.textContent='PAUSA'; oT.style.textShadow='0 0 20px #f0f,0 0 60px #f0f';
       oM.textContent='[ SPACE ] para continuar'; oH.textContent='';
-    } else if(state==='paused'){
-      state='playing'; ov.style.display='none';
-    }
+    } else if(state==='paused'){ state='playing'; ov.style.display='none'; }
   }
 });
 window.addEventListener('keyup',e=>keys[e.key]=false);
@@ -297,20 +257,11 @@ function update(){
   if(state!=='playing') return;
   tick++;
 
-  // paddles
   function moveP(p,uk1,uk2,dk1,dk2){
     if(p.frozen>0){ p.frozen--; return; }
-
-    let up=keys[uk1]||keys[uk2];
-    let dn=keys[dk1]||keys[dk2];
+    let up=keys[uk1]||keys[uk2], dn=keys[dk1]||keys[dk2];
     if(p.rev){ const tmp=up; up=dn; dn=tmp; }
-
-    // drunk: random drift
-    if(p._drunk>0){
-      p._drunk--;
-      if(tick%8===0){ p.y+=(Math.random()-.5)*20; }
-    }
-
+    if(p._drunk>0){ p._drunk--; if(tick%8===0) p.y+=(Math.random()-.5)*20; }
     if(up) p.y-=SPD; if(dn) p.y+=SPD;
     p.y=clamp(p.y,0,LH-p.ph);
     if(p.hit>0) p.hit--;
@@ -318,47 +269,46 @@ function update(){
   moveP(p1,'w','W','s','S');
   moveP(p2,'ArrowUp','ArrowUp','ArrowDown','ArrowDown');
 
-  // gravity powerup
   if(p1._gravity>0){ p1._gravity--; ball.vx-=.06; }
   if(p2._gravity>0){ p2._gravity--; ball.vx+=.06; }
 
-  // chaos
   if(chaosTick>0){
     chaosTick--;
     if(tick%55===0){
       ball.vy+=(Math.random()-.5)*8;
       const s=hyp(ball.vx,ball.vy);
-      if(s>2){ ball.vy=ball.vy/s*Math.min(s,16); ball.vx=ball.vx/s*Math.min(s,16); }
+      if(s>2){ ball.vx=ball.vx/s*Math.min(s,16); ball.vy=ball.vy/s*Math.min(s,16); }
     }
   }
   if(ghostTick>0) ghostTick--;
 
-  // ball trail
   const effectiveR=ball.r*ball.rMod;
   ball.trail.push({x:ball.x,y:ball.y});
   if(ball.trail.length>22) ball.trail.shift();
   ball.x+=ball.vx; ball.y+=ball.vy;
 
-  // wall
   if(ball.y-effectiveR<0){ball.y=effectiveR;ball.vy*=-1;sparksAt(ball.x,0,'#888',5);shake=3;}
   if(ball.y+effectiveR>LH){ball.y=LH-effectiveR;ball.vy*=-1;sparksAt(ball.x,LH,'#888',5);shake=3;}
 
-  // paddle hit
+  // ── PADDLE HIT (fix: ball.vx*dir<0 detects approach correctly) ──
   function pHit(p,dir,col){
-    if(ball.x-effectiveR<p.x+PW&&ball.x+effectiveR>p.x&&
-       ball.y>p.y&&ball.y<p.y+p.ph&&ball.vx*(-dir)<0){
+    if(ball.x-effectiveR < p.x+PW &&
+       ball.x+effectiveR > p.x   &&
+       ball.y > p.y && ball.y < p.y+p.ph &&
+       ball.vx*dir < 0){                      // ball moving TOWARD this paddle
       const h=(ball.y-(p.y+p.ph/2))/(p.ph/2);
       const s=Math.min(hyp(ball.vx,ball.vy)*1.06,18);
       const a=h*65*Math.PI/180;
-      ball.vx=dir*s*Math.cos(a); ball.vy=s*Math.sin(a);
-      ball.x=dir>0?p.x+PW+effectiveR:p.x-effectiveR;
+      ball.vx= dir*s*Math.cos(a);
+      ball.vy= s*Math.sin(a);
+      ball.x = dir>0 ? p.x+PW+effectiveR : p.x-effectiveR;
       p.hit=10; shake=7; flash=8;
       burst(ball.x,ball.y,col,25); sparksAt(ball.x,ball.y,col,12);
     }
   }
-  pHit(p1,1,C1); pHit(p2,-1,C2);
+  pHit(p1, 1, C1);   // p1 left paddle: dir=+1, ball must have vx<0
+  pHit(p2,-1, C2);   // p2 right paddle: dir=-1, ball must have vx>0
 
-  // obstacle collisions (skipped if ghost)
   if(!ghostTick){
     for(const o of obstacles){
       const bx=ball.x,by=ball.y,br=effectiveR;
@@ -376,46 +326,37 @@ function update(){
   }
   tickObs();
 
-  // bullets
   for(let i=bullets.length-1;i>=0;i--){
     const b=bullets[i];
     b.trail.push({x:b.x,y:b.y});
     if(b.trail.length>10) b.trail.shift();
     b.x+=b.vx;
-    // out of bounds
     if(b.x<-20||b.x>LW+20){bullets.splice(i,1);continue;}
-    // hit opponent paddle
     const target=b.owner===p1?p2:p1;
     if(b.x+6>target.x&&b.x-6<target.x+PW&&b.y>target.y&&b.y<target.y+target.ph){
       target.frozen=180;
       burst(b.x,b.y,'#88ccff',25);
-      floatText(target.x+PW/2,target.y-20,'❄ FROZEN','#88ccff');
-      bullets.splice(i,1); shake=8;
-      continue;
+      floatText(target.x+PW/2,target.y-20,'FROZEN','#88ccff');
+      bullets.splice(i,1); shake=8; continue;
     }
-    // hit obstacle
-    let hitObs=false;
+    let hit=false;
     for(const o of obstacles){
       if(b.x>o.x&&b.x<o.x+o.w&&b.y>o.y&&b.y<o.y+o.h){
-        sparksAt(b.x,b.y,b.col,6); bullets.splice(i,1); hitObs=true; break;
+        sparksAt(b.x,b.y,b.col,6); bullets.splice(i,1); hit=true; break;
       }
     }
-    if(!hitObs&&i<bullets.length) bullets[i]=bullets[i]; // no-op to avoid splice issue
   }
 
-  // powerups
   puTimer--;
   if(puTimer<=0){spawnPU();puTimer=350+rnd(250);}
   for(let i=powerups.length-1;i>=0;i--){
     const pu=powerups[i]; pu.age++;
     if(pu.age>pu.life){powerups.splice(i,1);continue;}
     if(hyp(ball.x-pu.x,ball.y-pu.y)<effectiveR+pu.r){
-      applyPU(pu,ball.vx<0?p2:p1);
-      powerups.splice(i,1);
+      applyPU(pu,ball.vx<0?p2:p1); powerups.splice(i,1);
     }
   }
 
-  // effects tick
   for(let i=particles.length-1;i>=0;i--){
     const p=particles[i];
     if(p.ring){p.r+=4;p.life-=p.dec;if(p.life<=0)particles.splice(i,1);continue;}
@@ -428,23 +369,20 @@ function update(){
     if(s.life<=0)sparks.splice(i,1);
   }
   for(let i=ftexts.length-1;i>=0;i--){
-    const t=ftexts[i];
-    t.y+=t.vy;t.life-=t.dec;
+    const t=ftexts[i]; t.y+=t.vy; t.life-=t.dec;
     if(t.life<=0)ftexts.splice(i,1);
   }
-  if(shake>0)shake--;
-  if(flash>0)flash--;
+  if(shake>0)shake--; if(flash>0)flash--;
 
-  // score (scored flag fixes multi-increment bug)
   if(!scored){
     if(ball.x < -effectiveR*3){
       scored=true; p2.score++;
-      burst(0,ball.y,C2,40); shake=14;flash=14;
+      burst(0,ball.y,C2,40); shake=14; flash=14;
       if(!checkWin()) setTimeout(()=>{resetBall(1);resetPaddles();},800);
     }
     if(ball.x > LW+effectiveR*3){
       scored=true; p1.score++;
-      burst(LW,ball.y,C1,40); shake=14;flash=14;
+      burst(LW,ball.y,C1,40); shake=14; flash=14;
       if(!checkWin()) setTimeout(()=>{resetBall(-1);resetPaddles();},800);
     }
   }
@@ -453,58 +391,41 @@ function update(){
 /* ── draw ───────────────────────────────────────────── */
 function draw(){
   ctx.fillStyle='#000'; ctx.fillRect(0,0,RW,RH);
-  const sx=shake?(Math.random()-.5)*shake:0;
-  const sy=shake?(Math.random()-.5)*shake:0;
+  const sx=shake?(Math.random()-.5)*shake:0, sy=shake?(Math.random()-.5)*shake:0;
   ctx.save();
   ctx.translate(ox+sx*sc,oy+sy*sc);
   ctx.scale(sc,sc);
 
-  // bg
   ctx.fillStyle='#000'; ctx.fillRect(0,0,LW,LH);
 
-  // reactive grid
   const effectiveR=ball.r*ball.rMod;
   for(const pt of grid){
-    const d=hyp(ball.x-pt.x,ball.y-pt.y);
-    const inf=Math.max(0,1-d/220);
+    const d=hyp(ball.x-pt.x,ball.y-pt.y), inf=Math.max(0,1-d/220);
     if(inf<.01) continue;
     ctx.globalAlpha=inf*.55; ctx.shadowBlur=inf*12; ctx.shadowColor='#0ff';
     ctx.fillStyle='#0ff'; ctx.fillRect(pt.x-.5,pt.y-.5,1,1);
   }
   ctx.globalAlpha=1; ctx.shadowBlur=0;
 
-  // ghost overlay
-  if(ghostTick>0){
-    ctx.globalAlpha=.08; ctx.fillStyle='#aaffaa'; ctx.fillRect(0,0,LW,LH);
-    ctx.globalAlpha=1;
-  }
-  // chaos overlay
-  if(chaosTick>0&&tick%6<3){
-    ctx.globalAlpha=.04; ctx.fillStyle='#ff44ff'; ctx.fillRect(0,0,LW,LH);
-    ctx.globalAlpha=1;
-  }
+  if(ghostTick>0){ctx.globalAlpha=.08;ctx.fillStyle='#aaffaa';ctx.fillRect(0,0,LW,LH);ctx.globalAlpha=1;}
+  if(chaosTick>0&&tick%6<3){ctx.globalAlpha=.04;ctx.fillStyle='#ff44ff';ctx.fillRect(0,0,LW,LH);ctx.globalAlpha=1;}
 
-  // center dashes
   for(let y=8;y<LH;y+=20){
     const inf=Math.max(0,1-Math.abs(ball.y-y)/100);
     ctx.globalAlpha=.07+inf*.3; ctx.shadowBlur=inf*12; ctx.shadowColor='#0ff';
-    ctx.fillStyle=inf>.1?'#0ff':'#1a1a1a';
-    ctx.fillRect(LW/2-1,y,2,10);
+    ctx.fillStyle=inf>.1?'#0ff':'#1a1a1a'; ctx.fillRect(LW/2-1,y,2,10);
   }
   ctx.globalAlpha=1; ctx.shadowBlur=0;
 
-  // obstacles
   for(const o of obstacles){
     ctx.shadowBlur=14+Math.sin(tick*.06)*7; ctx.shadowColor=o.col; ctx.fillStyle=o.col;
     rr(o.x,o.y,o.w,o.h,3);
     ctx.shadowBlur=0; ctx.fillStyle='rgba(0,0,0,.35)'; rr(o.x+2,o.y+2,o.w-4,o.h-4,2);
   }
 
-  // powerups
   for(const pu of powerups){
     const pulse=.7+Math.sin(tick*.09+pu.age*.06)*.3;
-    const fi=Math.min(1,pu.age/25);
-    const fo=pu.age>pu.life-50?(pu.life-pu.age)/50:1;
+    const fi=Math.min(1,pu.age/25), fo=pu.age>pu.life-50?(pu.life-pu.age)/50:1;
     ctx.globalAlpha=fi*fo;
     ctx.shadowBlur=22*pulse; ctx.shadowColor=pu.col;
     ctx.strokeStyle=pu.col; ctx.lineWidth=2;
@@ -513,60 +434,48 @@ function draw(){
     ctx.beginPath(); ctx.arc(pu.x,pu.y,pu.r*pulse,0,Math.PI*2); ctx.fill();
     ctx.shadowBlur=0; ctx.fillStyle=pu.col;
     ctx.font='bold 8px Courier New'; ctx.textAlign='center';
-    ctx.fillText(pu.lbl,pu.x,pu.y+3.5);
-    ctx.globalAlpha=1;
+    ctx.fillText(pu.lbl,pu.x,pu.y+3.5); ctx.globalAlpha=1;
   }
 
-  // score
   ctx.textAlign='center';
   ctx.font='bold 78px Courier New';
   ctx.shadowBlur=45; ctx.shadowColor=C1; ctx.fillStyle=C1; ctx.globalAlpha=.95;
   ctx.fillText(p1.score,LW/2-130,86);
-  ctx.shadowColor=C2; ctx.fillStyle=C2;
-  ctx.fillText(p2.score,LW/2+130,86);
+  ctx.shadowColor=C2; ctx.fillStyle=C2; ctx.fillText(p2.score,LW/2+130,86);
   ctx.shadowBlur=0; ctx.globalAlpha=1;
-  ctx.fillStyle='#222'; ctx.font='bold 38px Courier New';
-  ctx.fillText(':',LW/2,76);
+  ctx.fillStyle='#222'; ctx.font='bold 38px Courier New'; ctx.fillText(':',LW/2,76);
   ctx.font='9px Courier New';
   ctx.fillStyle=C1; ctx.shadowColor=C1; ctx.shadowBlur=6; ctx.fillText('J1  W/S  Q:shoot',LW/2-130,106);
   ctx.fillStyle=C2; ctx.shadowColor=C2; ctx.fillText('J2  ↑↓  P:shoot',LW/2+130,106);
   ctx.shadowBlur=0;
 
-  // ammo indicators
   if(p1.ammo>0){
     ctx.fillStyle='#ff2200'; ctx.shadowColor='#ff2200'; ctx.shadowBlur=8;
     ctx.font='bold 11px Courier New'; ctx.textAlign='left';
-    ctx.fillText('🔴'.repeat?'● '.repeat(p1.ammo):'x'+p1.ammo, 32, LH-12);
-    ctx.shadowBlur=0;
+    ctx.fillText('● '.repeat(p1.ammo),32,LH-12); ctx.shadowBlur=0;
   }
   if(p2.ammo>0){
     ctx.fillStyle='#ff2200'; ctx.shadowColor='#ff2200'; ctx.shadowBlur=8;
     ctx.font='bold 11px Courier New'; ctx.textAlign='right';
-    ctx.fillText('● '.repeat(p2.ammo), LW-32, LH-12);
-    ctx.shadowBlur=0;
+    ctx.fillText('● '.repeat(p2.ammo),LW-32,LH-12); ctx.shadowBlur=0;
   }
 
-  // status effects
   if(chaosTick>0){
     ctx.textAlign='center'; ctx.font='9px Courier New';
     ctx.fillStyle='#ff44ff'; ctx.shadowColor='#ff44ff'; ctx.shadowBlur=8;
-    ctx.fillText('⚡ CHAOS ' + Math.ceil(chaosTick/60) + 's', LW/2, LH-12);
-    ctx.shadowBlur=0;
+    ctx.fillText('CHAOS '+Math.ceil(chaosTick/60)+'s',LW/2,LH-12); ctx.shadowBlur=0;
   }
   if(ghostTick>0){
     ctx.textAlign='center'; ctx.font='9px Courier New';
     ctx.fillStyle='#aaffaa'; ctx.shadowColor='#aaffaa'; ctx.shadowBlur=8;
-    ctx.fillText('👻 GHOST ' + Math.ceil(ghostTick/60) + 's', LW/2, LH-24);
-    ctx.shadowBlur=0;
+    ctx.fillText('GHOST '+Math.ceil(ghostTick/60)+'s',LW/2,LH-24); ctx.shadowBlur=0;
   }
   if(obsLevel>0){
     ctx.textAlign='center'; ctx.font='9px Courier New';
     ctx.fillStyle='#ff6600'; ctx.shadowColor='#ff6600'; ctx.shadowBlur=5;
-    ctx.fillText('LVL '+obsLevel, LW/2, LH-36);
-    ctx.shadowBlur=0;
+    ctx.fillText('LVL '+obsLevel,LW/2,LH-36); ctx.shadowBlur=0;
   }
 
-  // bullets
   for(const b of bullets){
     for(let i=0;i<b.trail.length;i++){
       const t=b.trail[i];
@@ -582,20 +491,16 @@ function draw(){
     ctx.shadowBlur=0;
   }
 
-  // ball trail
   const bspd=hyp(ball.vx,ball.vy);
   for(let i=0;i<ball.trail.length;i++){
-    const t=ball.trail[i];
-    const a=(i/ball.trail.length)*.55;
-    const r2=effectiveR*(i/ball.trail.length)*.9;
-    const hue=180+bspd*10+i*3;
+    const t=ball.trail[i], a=(i/ball.trail.length)*.55;
+    const r2=effectiveR*(i/ball.trail.length)*.9, hue=180+bspd*10+i*3;
     ctx.globalAlpha=a; ctx.shadowBlur=12; ctx.shadowColor=`hsl(${hue},100%,60%)`;
     ctx.fillStyle=`hsl(${hue},100%,65%)`;
     ctx.beginPath(); ctx.arc(t.x,t.y,Math.max(r2,.5),0,Math.PI*2); ctx.fill();
   }
   ctx.globalAlpha=1; ctx.shadowBlur=0;
 
-  // particles & sparks
   for(const p of particles){
     ctx.globalAlpha=p.life;
     if(p.ring){
@@ -607,8 +512,7 @@ function draw(){
     }
   }
   for(const s of sparks){
-    ctx.globalAlpha=s.life; ctx.strokeStyle=s.col; ctx.shadowColor=s.col;
-    ctx.shadowBlur=6; ctx.lineWidth=1.5;
+    ctx.globalAlpha=s.life; ctx.strokeStyle=s.col; ctx.shadowColor=s.col; ctx.shadowBlur=6; ctx.lineWidth=1.5;
     ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.lineTo(s.x-s.vx*3,s.y-s.vy*3); ctx.stroke();
   }
   for(const t of ftexts){
@@ -618,32 +522,26 @@ function draw(){
   }
   ctx.globalAlpha=1; ctx.shadowBlur=0;
 
-  // paddles
   function drawPaddle(p,col){
-    // frozen effect: flicker blue
-    const drawCol=p.frozen>0&&tick%6<3?'#88ccff':col;
-    ctx.shadowBlur=p.hit>0?40:15; ctx.shadowColor=drawCol; ctx.fillStyle=drawCol;
+    const dc=p.frozen>0&&tick%6<3?'#88ccff':col;
+    ctx.shadowBlur=p.hit>0?40:15; ctx.shadowColor=dc; ctx.fillStyle=dc;
     rr(p.x,p.y,PW,p.ph,5);
     ctx.shadowBlur=0; ctx.fillStyle='rgba(255,255,255,.1)';
     rr(p.x+2,p.y+5,PW-4,p.ph-10,3);
-    // status icons above paddle
     let icons='';
-    if(p.rev) icons+='↕';
-    if(p.frozen>0) icons+='❄';
+    if(p.rev)      icons+='↕';
+    if(p.frozen>0) icons+='*';
     if(p._drunk>0) icons+='~';
-    if(p.ammo>0) icons+='●';
+    if(p.ammo>0)   icons+='●';
     if(icons){
-      ctx.fillStyle=drawCol; ctx.shadowColor=drawCol; ctx.shadowBlur=8;
+      ctx.fillStyle=dc; ctx.shadowColor=dc; ctx.shadowBlur=8;
       ctx.font='10px Courier New'; ctx.textAlign='center';
-      ctx.fillText(icons,p.x+PW/2,p.y-6);
-      ctx.shadowBlur=0;
+      ctx.fillText(icons,p.x+PW/2,p.y-6); ctx.shadowBlur=0;
     }
   }
   drawPaddle(p1,C1); drawPaddle(p2,C2);
 
-  // ball
-  const ghostAlpha=ghostTick>0?.55:1;
-  ctx.globalAlpha=ghostAlpha;
+  ctx.globalAlpha=ghostTick>0?.5:1;
   const hue2=180+bspd*12;
   ctx.shadowBlur=55; ctx.shadowColor=`hsl(${hue2},100%,60%)`;
   ctx.fillStyle=`hsl(${hue2},100%,75%)`;
@@ -652,14 +550,10 @@ function draw(){
   ctx.beginPath(); ctx.arc(ball.x,ball.y,effectiveR*.35,0,Math.PI*2); ctx.fill();
   ctx.shadowBlur=0; ctx.globalAlpha=1;
 
-  // flash
   if(flash>0){ctx.globalAlpha=(flash/14)*.18;ctx.fillStyle='#fff';ctx.fillRect(0,0,LW,LH);ctx.globalAlpha=1;}
-
-  // scanlines
   ctx.globalAlpha=.022; ctx.fillStyle='#000';
   for(let y=0;y<LH;y+=2) ctx.fillRect(0,y,LW,1);
   ctx.globalAlpha=1;
-
   ctx.restore();
 }
 
