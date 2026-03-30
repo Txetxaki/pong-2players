@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PONG — 2 Jugadores</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: 'Courier New', monospace;
+      color: #fff;
+      user-select: none;
+    }
+    h1 { font-size: 2rem; letter-spacing: 0.5rem; margin-bottom: 0.5rem; text-shadow: 0 0 20px rgba(255,255,255,0.5); }
+    .controls { font-size: 0.75rem; color: #666; margin-bottom: 1.5rem; display: flex; gap: 2rem; }
+    canvas { border: 2px solid #333; box-shadow: 0 0 40px rgba(255,255,255,0.05); border-radius: 4px; }
+    #overlay {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;
+      background: rgba(0,0,0,0.6); border-radius: 4px;
+    }
+    #overlay h2 { font-size: 2.5rem; letter-spacing: 0.3rem; text-shadow: 0 0 30px rgba(255,255,255,0.6); }
+    #overlay p { color: #888; font-size: 1rem; animation: blink 1.2s infinite; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+  </style>
+</head>
+<body>
+  <h1>PONG</h1>
+  <div class="controls"><span>J1: W / S</span><span>|</span><span>J2: ARRIBA / ABAJO</span></div>
+  <div style="position:relative">
+    <canvas id="canvas" width="800" height="500"></canvas>
+    <div id="overlay">
+      <h2 id="overlayTitle">PONG</h2>
+      <p id="overlayMsg">Presiona SPACE para empezar</p>
+    </div>
+  </div>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const overlay = document.getElementById('overlay');
+    const overlayTitle = document.getElementById('overlayTitle');
+    const overlayMsg = document.getElementById('overlayMsg');
+    const W = canvas.width, H = canvas.height;
+    const PW = 12, PH = 90, PS = 6, WIN = 7;
+    let state = 'idle';
+    const ball = { x: W/2, y: H/2, vx: 0, vy: 0, r: 10 };
+    const p1 = { x: 30, y: H/2 - PH/2, score: 0 };
+    const p2 = { x: W - 30 - PW, y: H/2 - PH/2, score: 0 };
+
+    function resetBall(dir) {
+      ball.x = W/2; ball.y = H/2;
+      const a = (Math.random()*60-30)*Math.PI/180;
+      ball.vx = dir*5*Math.cos(a); ball.vy = 5*Math.sin(a);
+    }
+
+    function startGame() {
+      p1.score = p2.score = 0;
+      p1.y = p2.y = H/2 - PH/2;
+      resetBall(Math.random()<.5?1:-1);
+      state = 'playing'; overlay.style.display = 'none';
+    }
+
+    const keys = {};
+    window.addEventListener('keydown', e => {
+      keys[e.key] = true;
+      if([' ','ArrowUp','ArrowDown'].includes(e.key)) e.preventDefault();
+      if(e.key===' ') {
+        if(state==='idle'||state==='won') startGame();
+        else if(state==='playing') { state='paused'; overlay.style.display='flex'; overlayTitle.textContent='PAUSA'; overlayMsg.textContent='SPACE para continuar'; }
+        else if(state==='paused') { state='playing'; overlay.style.display='none'; }
+      }
+    });
+    window.addEventListener('keyup', e => keys[e.key]=false);
+
+    function update() {
+      if(state!=='playing') return;
+      if(keys['w']||keys['W']) p1.y -= PS;
+      if(keys['s']||keys['S']) p1.y += PS;
+      if(keys['ArrowUp']) p2.y -= PS;
+      if(keys['ArrowDown']) p2.y += PS;
+      p1.y = Math.max(0,Math.min(H-PH,p1.y));
+      p2.y = Math.max(0,Math.min(H-PH,p2.y));
+      ball.x += ball.vx; ball.y += ball.vy;
+      if(ball.y-ball.r<0){ball.y=ball.r;ball.vy*=-1;}
+      if(ball.y+ball.r>H){ball.y=H-ball.r;ball.vy*=-1;}
+      const hit = p => ball.x-ball.r<p.x+PW&&ball.x+ball.r>p.x&&ball.y>p.y&&ball.y<p.y+PH;
+      if(ball.vx<0&&hit(p1)) {
+        const h=(ball.y-(p1.y+PH/2))/(PH/2), spd=Math.min(Math.hypot(ball.vx,ball.vy)*1.05,14), a=h*60*Math.PI/180;
+        ball.vx=spd*Math.cos(a); ball.vy=spd*Math.sin(a); ball.x=p1.x+PW+ball.r;
+      }
+      if(ball.vx>0&&hit(p2)) {
+        const h=(ball.y-(p2.y+PH/2))/(PH/2), spd=Math.min(Math.hypot(ball.vx,ball.vy)*1.05,14), a=h*60*Math.PI/180;
+        ball.vx=-(spd*Math.cos(a)); ball.vy=spd*Math.sin(a); ball.x=p2.x-ball.r;
+      }
+      if(ball.x<0){p2.score++;win()||setTimeout(()=>resetBall(1),500);}
+      if(ball.x>W){p1.score++;win()||setTimeout(()=>resetBall(-1),500);}
+    }
+
+    function win() {
+      if(p1.score>=WIN||p2.score>=WIN){
+        state='won'; overlay.style.display='flex';
+        overlayTitle.textContent=(p1.score>=WIN?'JUGADOR 1':'JUGADOR 2')+' GANA!';
+        overlayMsg.textContent='SPACE para jugar de nuevo'; return true;
+      }
+    }
+
+    function rr(x,y,w,h,r=5){
+      ctx.beginPath();
+      ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+      ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+      ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);
+      ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);
+      ctx.closePath();ctx.fill();
+    }
+
+    function draw() {
+      ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,W,H);
+      ctx.setLineDash([10,10]);ctx.strokeStyle='#1e1e1e';ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(W/2,0);ctx.lineTo(W/2,H);ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle='#2a2a2a';ctx.font='bold 5rem Courier New';ctx.textAlign='center';
+      ctx.fillText(p1.score,W/2-120,90);ctx.fillText(p2.score,W/2+120,90);
+      ctx.fillStyle='#fff';ctx.shadowColor='rgba(255,255,255,0.4)';ctx.shadowBlur=12;
+      rr(p1.x,p1.y,PW,PH);rr(p2.x,p2.y,PW,PH);
+      ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);ctx.fill();
+      ctx.shadowBlur=0;
+    }
+
+    (function loop(){update();draw();requestAnimationFrame(loop);})();
+  </script>
+</body>
+</html>
